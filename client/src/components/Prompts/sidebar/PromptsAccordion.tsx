@@ -1,7 +1,7 @@
 import { SystemRoles } from 'librechat-data-provider';
 import { usePromptGroupsContext } from '~/Providers';
 import { useAuthContext } from '~/hooks';
-import { AdvancedSwitch, AdminSettings } from '~/components/Prompts';
+import { AdminSettings } from '~/components/Prompts';
 import AutoSendPrompt from '../buttons/AutoSendPrompt';
 import PromptSidePanel from './GroupSidePanel';
 import FilterPrompts from './FilterPrompts';
@@ -16,12 +16,9 @@ export default function PromptsAccordion() {
         {...groupsNav}
       >
         <FilterPrompts />
-        <div className="flex w-full items-center justify-between">
-          <AdvancedSwitch />
-          <div className="flex items-center gap-2">
-            {user?.role === SystemRoles.ADMIN && <AdminSettings />}
-            <AutoSendPrompt />
-          </div>
+        <div className="flex w-full items-center justify-end gap-2">
+          {user?.role === SystemRoles.ADMIN && <AdminSettings />}
+          <AutoSendPrompt />
         </div>
       </PromptSidePanel>
     </div>

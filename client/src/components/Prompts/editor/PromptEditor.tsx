@@ -44,7 +44,7 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
   return (
     <div className="flex max-h-[85vh] flex-col sm:max-h-[85vh]">
       <h2 className="sr-only">{localize('com_ui_control_bar')}</h2>
-      <header className="flex items-center justify-between rounded-t-xl border border-border-light bg-transparent p-2">
+      <header className="flex items-center justify-between rounded-t-xl border border-border-medium bg-transparent p-2">
         <div className="ml-1 flex items-center gap-2">
           <FileText className="size-4 text-text-secondary" aria-hidden="true" />
           <h3 className="text-sm font-semibold text-text-primary">
@@ -73,10 +73,8 @@ const PromptEditor: React.FC<Props> = ({ name, isEditing, setIsEditing }) => {
       </header>
       <div
         className={cn(
-          'relative w-full flex-1 overflow-auto rounded-b-xl border border-t-0 border-border-light p-3 text-left transition-all duration-200 sm:p-4',
-          isEditing
-            ? 'bg-surface-primary'
-            : 'cursor-pointer bg-surface-primary hover:bg-surface-secondary',
+          'relative w-full flex-1 overflow-auto rounded-b-xl border border-t-0 border-border-medium p-3 text-left transition-all duration-200 sm:p-4',
+          isEditing ? '' : 'cursor-pointer hover:bg-surface-secondary',
         )}
       >
         {!isEditing && (
