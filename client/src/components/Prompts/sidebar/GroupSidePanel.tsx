@@ -5,7 +5,6 @@ import { useLocation } from 'react-router-dom';
 import { Button, Sidebar, TooltipAnchor } from '@librechat/client';
 import { usePromptGroupsContext, useDashboardContext } from '~/Providers';
 import { useLocalize, useCustomLink } from '~/hooks';
-import ManagePrompts from '../buttons/ManagePrompts';
 import PanelNavigation from './PanelNavigation';
 import List from '../lists/List';
 import { cn } from '~/utils';
@@ -110,9 +109,7 @@ export default function GroupSidePanel({
           hasPreviousPage={hasPreviousPage}
           isLoading={groupsQuery.isFetching}
           isChatRoute={isChatRoute}
-        >
-          {isChatRoute && <ManagePrompts className="select-none" />}
-        </PanelNavigation>
+        />
       </div>
     </div>
   );

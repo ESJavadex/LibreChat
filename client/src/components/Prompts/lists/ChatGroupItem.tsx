@@ -1,5 +1,5 @@
 import { useState, memo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useSetRecoilState } from 'recoil';
 import { Button, TooltipAnchor } from '@librechat/client';
 import { Eye, Pencil, EarthIcon, User } from 'lucide-react';
 import { PermissionBits, ResourceType } from 'librechat-data-provider';
@@ -10,13 +10,14 @@ import VariableDialog from '../dialogs/VariableDialog';
 import PreviewPrompt from '../dialogs/PreviewPrompt';
 import { detectVariables } from '~/utils';
 import ListCard from './ListCard';
+import store from '~/store';
 
 function ChatGroupItem({ group }: { group: TPromptGroup }) {
   const localize = useLocalize();
-  const navigate = useNavigate();
   const { user } = useAuthContext();
   const { submitPrompt } = useSubmitMessage();
   const recordUsage = useRecordPromptUsage();
+  const setEditingPromptId = useSetRecoilState(store.editingPromptId);
 
   const isSharedPrompt = group.author !== user?.id && Boolean(group.authorName);
   const [isPreviewDialogOpen, setPreviewDialogOpen] = useState(false);
@@ -120,7 +121,7 @@ function ChatGroupItem({ group }: { group: TPromptGroup }) {
                     aria-label={localize('com_ui_edit')}
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/d/prompts/${group._id}`);
+                      setEditingPromptId(group._id ?? null);
                     }}
                   >
                     <Pencil className="size-4 text-text-primary" aria-hidden="true" />
