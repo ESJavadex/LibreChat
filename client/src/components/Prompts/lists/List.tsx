@@ -10,12 +10,10 @@ export default function List({
   groups = [],
   isChatRoute,
   isLoading,
-  onSelect,
 }: {
   groups?: TPromptGroup[];
   isChatRoute: boolean;
   isLoading: boolean;
-  onSelect?: (groupId: string) => void;
 }) {
   const localize = useLocalize();
 
@@ -52,9 +50,7 @@ export default function List({
             </div>
           )}
           {isChatRoute ? (
-            groups.map((group) => (
-              <ChatGroupItem key={group._id} group={group} onSelect={onSelect} />
-            ))
+            groups.map((group) => <ChatGroupItem key={group._id} group={group} />)
           ) : (
             <div className="space-y-2 px-0 md:px-2">
               {groups.map((group) => (

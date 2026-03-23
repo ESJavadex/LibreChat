@@ -1,14 +1,14 @@
 import { useCallback } from 'react';
-import { useRecoilState } from 'recoil';
+import { useParams, useNavigate } from 'react-router-dom';
 import { PermissionTypes, Permissions } from 'librechat-data-provider';
 import { useHasAccess } from '~/hooks';
 import CreatePromptForm from '../forms/CreatePromptForm';
 import PromptForm from '../forms/PromptForm';
-import store from '~/store';
 
 export default function InlinePromptsView() {
-  const [editingPromptId, setEditingPromptId] = useRecoilState(store.editingPromptId);
-  const isNew = editingPromptId === 'new';
+  const { promptId } = useParams();
+  const navigate = useNavigate();
+  const isNew = promptId === undefined;
 
   const hasAccess = useHasAccess({
     permissionType: PermissionTypes.PROMPTS,
@@ -17,9 +17,9 @@ export default function InlinePromptsView() {
 
   const handleCreateSuccess = useCallback(
     (groupId: string) => {
-      setEditingPromptId(groupId);
+      navigate(`/prompts/${groupId}`, { replace: true });
     },
-    [setEditingPromptId],
+    [navigate],
   );
 
   if (!hasAccess) {
@@ -30,9 +30,9 @@ export default function InlinePromptsView() {
     <div className="flex h-full w-full flex-col overflow-y-auto bg-surface-primary">
       {isNew ? (
         <CreatePromptForm onSuccess={handleCreateSuccess} />
-      ) : editingPromptId ? (
-        <PromptForm promptId={editingPromptId} />
-      ) : null}
+      ) : (
+        <PromptForm promptId={promptId} />
+      )}
     </div>
   );
 }

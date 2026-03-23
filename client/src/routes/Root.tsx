@@ -1,6 +1,6 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { Outlet, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useRecoilValue } from 'recoil';
+import { Outlet } from 'react-router-dom';
 import { useMediaQuery } from '@librechat/client';
 import {
   useSearchEnabled,
@@ -23,25 +23,15 @@ import { TermsAndConditionsModal } from '~/components/ui';
 import { useHealthCheck } from '~/data-provider';
 import { Banner } from '~/components/Banners';
 
-const InlinePromptsView = lazy(() => import('~/components/Prompts/layouts/InlinePromptsView'));
-
 export default function Root() {
   const [showTerms, setShowTerms] = useState(false);
   const [bannerHeight, setBannerHeight] = useState(0);
   const sidebarExpanded = useRecoilValue(store.sidebarExpanded);
-  const editingPromptId = useRecoilValue(store.editingPromptId);
-  const setEditingPromptId = useSetRecoilState(store.editingPromptId);
   const isSmallScreen = useMediaQuery('(max-width: 768px)');
-  const location = useLocation();
 
   const { isAuthenticated, logout } = useAuthContext();
 
   useHealthCheck(isAuthenticated);
-
-  /** Clear prompt editor when the route changes (conversation switch, new chat, etc.) */
-  useEffect(() => {
-    setEditingPromptId(null);
-  }, [location.pathname, setEditingPromptId]);
 
   const assistantsMap = useAssistantsMap({ isAuthenticated });
   const agentsMap = useAgentsMap({ isAuthenticated });
@@ -92,13 +82,7 @@ export default function Root() {
                     }}
                     {...{ inert: isSmallScreen && sidebarExpanded ? '' : undefined }}
                   >
-                    {editingPromptId !== null ? (
-                      <Suspense fallback={null}>
-                        <InlinePromptsView />
-                      </Suspense>
-                    ) : (
-                      <Outlet />
-                    )}
+                    <Outlet />
                   </div>
                 </div>
               </div>

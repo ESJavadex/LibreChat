@@ -12,8 +12,6 @@ const staticAtoms = {
   promptsPageNumber: atom<number>({ key: 'promptsPageNumber', default: 1 }),
   // `pageSize` filter
   promptsPageSize: atom<number>({ key: 'promptsPageSize', default: 10 }),
-  /** ID of the prompt group being edited, or 'new' for creation. null = normal chat view */
-  editingPromptId: atom<string | null>({ key: 'editingPromptId', default: null }),
 };
 
 // Atoms with localStorage
