@@ -53,6 +53,13 @@ export default function InlinePromptsView() {
     [setEditingPromptId],
   );
 
+  const handleSelectPrompt = useCallback(
+    (groupId: string) => {
+      setEditingPromptId(groupId);
+    },
+    [setEditingPromptId],
+  );
+
   if (!hasAccess) {
     return null;
   }
@@ -98,6 +105,8 @@ export default function InlinePromptsView() {
             <GroupSidePanel
               closePanelRef={closePanelRef}
               onClose={isSmallerScreen && isDetailView ? togglePanel : undefined}
+              isChatRoute={true}
+              onSelect={handleSelectPrompt}
             >
               <div className="mt-1 flex flex-row items-center justify-between px-2">
                 <FilterPrompts dropdownClassName="z-[100]" />

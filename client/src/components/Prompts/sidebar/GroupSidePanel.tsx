@@ -15,15 +15,19 @@ export default function GroupSidePanel({
   className = '',
   closePanelRef,
   onClose,
+  isChatRoute: isChatRouteProp,
+  onSelect,
 }: {
   children?: React.ReactNode;
   className?: string;
   closePanelRef?: React.RefObject<HTMLButtonElement>;
   onClose?: () => void;
+  isChatRoute?: boolean;
+  onSelect?: (groupId: string) => void;
 }) {
   const location = useLocation();
   const localize = useLocalize();
-  const isChatRoute = useMemo(() => location.pathname?.startsWith('/c/'), [location.pathname]);
+  const isChatRoute = isChatRouteProp ?? location.pathname?.startsWith('/c/') ?? false;
 
   const { prevLocationPath } = useDashboardContext();
   const setPromptsName = useSetRecoilState(store.promptsName);
@@ -98,6 +102,7 @@ export default function GroupSidePanel({
             groups={promptGroups}
             isChatRoute={isChatRoute}
             isLoading={!!groupsQuery.isLoading}
+            onSelect={onSelect}
           />
         </div>
       </div>
