@@ -1,7 +1,7 @@
 import { useState, memo, useRef, useCallback, useEffect, useId, useMemo } from 'react';
 import * as Ariakit from '@ariakit/react';
 import { useNavigate } from 'react-router-dom';
-import { Ellipsis, Eye, Pencil, PenLine, Trash2, EarthIcon, User } from 'lucide-react';
+import { Ellipsis, Eye, SquarePen, TextCursorInput, Trash2, EarthIcon, User } from 'lucide-react';
 import { PermissionBits, ResourceType } from 'librechat-data-provider';
 import type { TPromptGroup } from 'librechat-data-provider';
 import {
@@ -10,6 +10,7 @@ import {
   Button,
   Spinner,
   OGDialog,
+  TooltipAnchor,
   DropdownPopup,
   OGDialogTemplate,
   useToastContext,
@@ -120,12 +121,12 @@ function ChatGroupItem({ group }: { group: TPromptGroup }) {
       items.push({
         label: localize('com_ui_edit'),
         onClick: () => navigate(`/prompts/${group._id}`),
-        icon: <Pencil className="icon-sm mr-2 text-text-primary" aria-hidden="true" />,
+        icon: <SquarePen className="icon-sm mr-2 text-text-primary" aria-hidden="true" />,
       });
       items.push({
         label: localize('com_ui_rename'),
         onClick: () => setRenameOpen(true),
-        icon: <PenLine className="icon-sm mr-2 text-text-primary" aria-hidden="true" />,
+        icon: <TextCursorInput className="icon-sm mr-2 text-text-primary" aria-hidden="true" />,
       });
     }
     if (canDelete) {
@@ -160,10 +161,36 @@ function ChatGroupItem({ group }: { group: TPromptGroup }) {
                 {group.name}
               </span>
               {isSharedPrompt && (
-                <User className="size-3.5 shrink-0 text-text-secondary" aria-hidden="true" />
+                <TooltipAnchor
+                  description={localize('com_ui_by_author', { 0: group.authorName })}
+                  side="top"
+                  render={
+                    <span
+                      tabIndex={0}
+                      role="img"
+                      aria-label={localize('com_ui_by_author', { 0: group.authorName })}
+                      className="flex shrink-0 items-center"
+                    >
+                      <User className="size-3.5 text-text-secondary" aria-hidden="true" />
+                    </span>
+                  }
+                />
               )}
               {groupIsGlobal && (
-                <EarthIcon className="size-3.5 shrink-0 text-green-400" aria-hidden="true" />
+                <TooltipAnchor
+                  description={localize('com_ui_sr_global_prompt')}
+                  side="top"
+                  render={
+                    <span
+                      tabIndex={0}
+                      role="img"
+                      aria-label={localize('com_ui_sr_global_prompt')}
+                      className="flex shrink-0 items-center"
+                    >
+                      <EarthIcon className="size-3.5 text-green-400" aria-hidden="true" />
+                    </span>
+                  }
+                />
               )}
             </div>
             <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-text-secondary">
