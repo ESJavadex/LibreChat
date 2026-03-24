@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Check, Loader2 } from 'lucide-react';
+import { Pencil, Check, Loader2 } from 'lucide-react';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
 
@@ -80,7 +80,7 @@ const PromptName: React.FC<Props> = ({ name, isLoading = false, onSave }) => {
   }, []);
 
   return (
-    <div className="flex h-9 min-w-0 flex-1 items-center gap-1.5">
+    <div className="group/title flex h-9 min-w-0 flex-1 items-center gap-1.5">
       {isEditing ? (
         <input
           ref={inputRef}
@@ -90,18 +90,22 @@ const PromptName: React.FC<Props> = ({ name, isLoading = false, onSave }) => {
           onKeyDown={handleKeyDown}
           onBlur={saveName}
           disabled={isLoading}
-          className="h-9 min-w-0 flex-1 border-b border-border-heavy bg-transparent px-0 text-lg font-semibold text-text-primary outline-none disabled:opacity-60"
+          className="h-9 min-w-0 flex-1 border-none bg-transparent px-0 text-lg font-semibold text-text-primary outline-none disabled:opacity-60"
           aria-label={localize('com_ui_name')}
         />
       ) : (
         <button
           type="button"
           onClick={() => setIsEditing(true)}
-          className="block h-9 min-w-0 flex-1 cursor-text truncate border-b border-transparent text-left text-lg font-semibold text-text-primary focus:outline-none"
+          className="flex h-9 min-w-0 flex-1 cursor-text items-center gap-2 truncate rounded-lg text-left text-lg font-semibold text-text-primary transition-colors hover:text-text-secondary focus:outline-none"
           title={newName}
           aria-label={localize('com_ui_edit') + ': ' + (newName ?? '')}
         >
-          {newName}
+          <span className="truncate">{newName}</span>
+          <Pencil
+            className="size-3.5 shrink-0 text-text-tertiary opacity-0 transition-opacity group-hover/title:opacity-100"
+            aria-hidden="true"
+          />
         </button>
       )}
       <div className="flex size-5 shrink-0 items-center justify-center">
