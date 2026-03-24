@@ -1,6 +1,7 @@
-import { useState, memo, useRef, useCallback, useEffect } from 'react';
+import { useState, memo, useRef, useCallback, useEffect, useId, useMemo } from 'react';
+import * as Ariakit from '@ariakit/react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Pencil, Trash2, EarthIcon, User } from 'lucide-react';
+import { Ellipsis, Eye, Pencil, PenLine, Trash2, EarthIcon, User } from 'lucide-react';
 import { PermissionBits, ResourceType } from 'librechat-data-provider';
 import type { TPromptGroup } from 'librechat-data-provider';
 import {
@@ -9,8 +10,7 @@ import {
   Button,
   Spinner,
   OGDialog,
-  TooltipAnchor,
-  OGDialogTrigger,
+  DropdownPopup,
   OGDialogTemplate,
   useToastContext,
 } from '@librechat/client';
@@ -19,8 +19,8 @@ import { useRecordPromptUsage, useDeletePromptGroup, useUpdatePromptGroup } from
 import { useLiveAnnouncer } from '~/Providers';
 import VariableDialog from '../dialogs/VariableDialog';
 import PreviewPrompt from '../dialogs/PreviewPrompt';
+import CategoryIcon from '../utils/CategoryIcon';
 import { detectVariables } from '~/utils';
-import ListCard from './ListCard';
 
 function ChatGroupItem({ group }: { group: TPromptGroup }) {
   const localize = useLocalize();
@@ -31,10 +31,13 @@ function ChatGroupItem({ group }: { group: TPromptGroup }) {
   const { showToast } = useToastContext();
   const { announcePolite } = useLiveAnnouncer();
 
+  const menuId = useId();
   const isSharedPrompt = group.author !== user?.id && Boolean(group.authorName);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [isPreviewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [isVariableDialogOpen, setVariableDialogOpen] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [nameInputValue, setNameInputValue] = useState(group.name);
 
   const groupIsGlobal = group.isPublic === true;
@@ -96,173 +99,100 @@ function ChatGroupItem({ group }: { group: TPromptGroup }) {
     }
   }, [group, submitPrompt, recordUsage]);
 
+  const snippet =
+    typeof group.oneliner === 'string' && group.oneliner.length > 0
+      ? group.oneliner
+      : (group.productionPrompt?.prompt ?? '');
+
+  const ariaLabel = group.category
+    ? localize('com_ui_prompt_group_button', { name: group.name, category: group.category })
+    : localize('com_ui_prompt_group_button_no_category', { name: group.name });
+
+  const dropdownItems = useMemo(() => {
+    const items = [
+      {
+        label: localize('com_ui_preview'),
+        onClick: () => setPreviewDialogOpen(true),
+        icon: <Eye className="icon-sm mr-2 text-text-primary" aria-hidden="true" />,
+      },
+    ];
+    if (canEdit) {
+      items.push({
+        label: localize('com_ui_edit'),
+        onClick: () => navigate(`/prompts/${group._id}`),
+        icon: <Pencil className="icon-sm mr-2 text-text-primary" aria-hidden="true" />,
+      });
+      items.push({
+        label: localize('com_ui_rename'),
+        onClick: () => setRenameOpen(true),
+        icon: <PenLine className="icon-sm mr-2 text-text-primary" aria-hidden="true" />,
+      });
+    }
+    if (canDelete) {
+      items.push({
+        label: localize('com_ui_delete'),
+        onClick: () => setDeleteOpen(true),
+        icon: <Trash2 className="icon-sm mr-2 text-red-500" aria-hidden="true" />,
+      });
+    }
+    return items;
+  }, [localize, canEdit, canDelete, group._id, navigate]);
+
   return (
     <>
-      <div className="mb-2 rounded-xl border border-border-medium bg-transparent px-1 hover:bg-surface-secondary">
-        <ListCard
-          name={group.name}
-          category={group.category ?? ''}
+      <div className="group/prompt relative mb-1.5 rounded-xl border border-border-light bg-transparent transition-colors hover:bg-surface-secondary">
+        {/* Clickable overlay for card */}
+        <button
+          type="button"
+          className="absolute inset-0 z-0 rounded-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-ring-primary"
           onClick={onCardClick}
-          snippet={
-            typeof group.oneliner === 'string' && group.oneliner.length > 0
-              ? group.oneliner
-              : (group.productionPrompt?.prompt ?? '')
-          }
-          icon={
-            isSharedPrompt || groupIsGlobal ? (
-              <>
-                {isSharedPrompt && (
-                  <TooltipAnchor
-                    description={localize('com_ui_by_author', { 0: group.authorName })}
-                    side="top"
-                    render={
-                      <span
-                        tabIndex={0}
-                        role="img"
-                        aria-label={localize('com_ui_by_author', { 0: group.authorName })}
-                        className="flex shrink-0 cursor-default items-center rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring-primary"
-                      >
-                        <User className="icon-md text-text-secondary" aria-hidden="true" />
-                      </span>
-                    }
-                  />
-                )}
-                {groupIsGlobal && (
-                  <EarthIcon
-                    className="icon-md shrink-0 text-green-400"
-                    aria-label={localize('com_ui_sr_global_prompt')}
-                  />
-                )}
-              </>
-            ) : undefined
-          }
-        >
-          <div className="flex items-center gap-1">
-            <TooltipAnchor
-              description={localize('com_ui_preview')}
-              side="top"
-              render={
-                <Button
-                  ref={previewButtonRef}
-                  variant="ghost"
-                  size="icon"
-                  className="size-7"
-                  aria-label={localize('com_ui_preview')}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setPreviewDialogOpen(true);
-                  }}
-                >
-                  <Eye className="size-4 text-text-primary" aria-hidden="true" />
-                </Button>
-              }
-            />
-            {canEdit && (
-              <TooltipAnchor
-                description={localize('com_ui_edit')}
-                side="top"
-                render={
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-7"
-                    aria-label={localize('com_ui_edit')}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/prompts/${group._id}`);
-                    }}
-                  >
-                    <Pencil className="size-4 text-text-primary" aria-hidden="true" />
-                  </Button>
-                }
-              />
-            )}
-            {canEdit && (
-              <OGDialog open={renameOpen} onOpenChange={setRenameOpen}>
-                <OGDialogTrigger asChild>
-                  <TooltipAnchor
-                    description={localize('com_ui_rename')}
-                    side="top"
-                    render={
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7"
-                        aria-label={localize('com_ui_rename_prompt_name', { name: group.name })}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <svg
-                          className="size-4 text-text-primary"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M12 20h9" />
-                          <path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z" />
-                        </svg>
-                      </Button>
-                    }
-                  />
-                </OGDialogTrigger>
-                <OGDialogTemplate
-                  showCloseButton={false}
-                  title={localize('com_ui_rename_prompt')}
-                  className="w-11/12 max-w-md"
-                  main={
-                    <Input
-                      value={nameInputValue}
-                      onChange={(e) => setNameInputValue(e.target.value)}
-                      className="w-full"
-                      aria-label={localize('com_ui_rename_prompt_name', { name: group.name })}
-                    />
-                  }
-                  selection={
-                    <Button onClick={handleSaveRename} variant="submit">
-                      {updateGroup.isLoading ? <Spinner /> : localize('com_ui_save')}
-                    </Button>
-                  }
-                />
-              </OGDialog>
-            )}
-            {canDelete && (
-              <OGDialog>
-                <OGDialogTrigger asChild>
-                  <TooltipAnchor
-                    description={localize('com_ui_delete')}
-                    side="top"
-                    render={
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-7"
-                        aria-label={localize('com_ui_delete_prompt_name', { name: group.name })}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Trash2 className="size-4 text-text-primary" aria-hidden="true" />
-                      </Button>
-                    }
-                  />
-                </OGDialogTrigger>
-                <OGDialogTemplate
-                  title={localize('com_ui_delete_prompt')}
-                  className="w-11/12 max-w-md"
-                  main={
-                    <Label>{localize('com_ui_prompt_delete_confirm', { 0: group.name })}</Label>
-                  }
-                  selection={
-                    <Button onClick={handleDelete} variant="destructive">
-                      {deleteGroup.isLoading ? <Spinner /> : localize('com_ui_delete')}
-                    </Button>
-                  }
-                />
-              </OGDialog>
-            )}
+          aria-label={ariaLabel}
+        />
+        <div className="flex items-start gap-2.5 px-3 py-2.5">
+          <CategoryIcon
+            category={group.category ?? ''}
+            className="mt-0.5 size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <span className="truncate text-sm font-semibold text-text-primary" title={group.name}>
+                {group.name}
+              </span>
+              {isSharedPrompt && (
+                <User className="size-3.5 shrink-0 text-text-secondary" aria-hidden="true" />
+              )}
+              {groupIsGlobal && (
+                <EarthIcon className="size-3.5 shrink-0 text-green-400" aria-hidden="true" />
+              )}
+            </div>
+            <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-text-secondary">
+              {snippet}
+            </p>
           </div>
-        </ListCard>
+          {/* Dropdown menu */}
+          <div className="relative z-10 shrink-0">
+            <DropdownPopup
+              portal={true}
+              menuId={menuId}
+              focusLoop={true}
+              className="z-[125]"
+              unmountOnHide={true}
+              isOpen={menuOpen}
+              setIsOpen={setMenuOpen}
+              trigger={
+                <Ariakit.MenuButton
+                  aria-label={localize('com_nav_convo_menu_options')}
+                  className="flex size-7 items-center justify-center rounded-md text-text-secondary opacity-0 transition-opacity hover:bg-surface-hover focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-primary group-hover/prompt:opacity-100 data-[open]:opacity-100"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Ellipsis className="size-4" aria-hidden="true" />
+                </Ariakit.MenuButton>
+              }
+              items={dropdownItems}
+            />
+          </div>
+        </div>
       </div>
       <PreviewPrompt
         group={group}
@@ -274,6 +204,38 @@ function ChatGroupItem({ group }: { group: TPromptGroup }) {
           });
         }}
       />
+      <OGDialog open={renameOpen} onOpenChange={setRenameOpen}>
+        <OGDialogTemplate
+          showCloseButton={false}
+          title={localize('com_ui_rename_prompt')}
+          className="w-11/12 max-w-md"
+          main={
+            <Input
+              value={nameInputValue}
+              onChange={(e) => setNameInputValue(e.target.value)}
+              className="w-full"
+              aria-label={localize('com_ui_rename_prompt_name', { name: group.name })}
+            />
+          }
+          selection={
+            <Button onClick={handleSaveRename} variant="submit">
+              {updateGroup.isLoading ? <Spinner /> : localize('com_ui_save')}
+            </Button>
+          }
+        />
+      </OGDialog>
+      <OGDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <OGDialogTemplate
+          title={localize('com_ui_delete_prompt')}
+          className="w-11/12 max-w-md"
+          main={<Label>{localize('com_ui_prompt_delete_confirm', { 0: group.name })}</Label>}
+          selection={
+            <Button onClick={handleDelete} variant="destructive">
+              {deleteGroup.isLoading ? <Spinner /> : localize('com_ui_delete')}
+            </Button>
+          }
+        />
+      </OGDialog>
       <VariableDialog
         open={isVariableDialogOpen}
         onClose={() => setVariableDialogOpen(false)}
