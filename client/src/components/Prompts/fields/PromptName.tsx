@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Pencil } from 'lucide-react';
-import { Button, Spinner, TooltipAnchor } from '@librechat/client';
+import { Pencil, Check, Loader2 } from 'lucide-react';
+import { Button, TooltipAnchor } from '@librechat/client';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
 
@@ -81,7 +81,7 @@ const PromptName: React.FC<Props> = ({ name, isLoading = false, onSave }) => {
   }, []);
 
   return (
-    <div className="flex h-10 min-w-0 flex-1 items-center gap-2">
+    <div className="flex h-9 min-w-0 flex-1 items-center gap-1.5">
       {isEditing ? (
         <input
           ref={inputRef}
@@ -91,36 +91,34 @@ const PromptName: React.FC<Props> = ({ name, isLoading = false, onSave }) => {
           onKeyDown={handleKeyDown}
           onBlur={saveName}
           disabled={isLoading}
-          className="h-10 min-w-0 flex-1 border-b border-border-heavy bg-transparent px-0 text-xl font-semibold text-text-primary outline-none disabled:opacity-60 sm:text-2xl"
+          className="h-9 min-w-0 flex-1 border-b border-border-heavy bg-transparent px-0 text-lg font-semibold text-text-primary outline-none disabled:opacity-60"
           aria-label={localize('com_ui_name')}
         />
       ) : (
         <span
-          className="block min-w-0 flex-1 truncate border-b border-transparent text-xl font-semibold text-text-primary sm:text-2xl"
+          className="block min-w-0 flex-1 truncate border-b border-transparent text-lg font-semibold text-text-primary"
           title={newName}
         >
           {newName}
         </span>
       )}
-      <div className="flex shrink-0 items-center gap-1.5">
-        <span
-          className={cn(
-            'text-xs transition-opacity duration-200',
-            saveStatus === 'idle' && 'opacity-0',
-            saveStatus === 'saving' && 'text-text-secondary opacity-100',
-            saveStatus === 'saved' && 'text-green-500 opacity-100',
-          )}
-          aria-live="polite"
-        >
-          {saveStatus === 'saving' && (
-            <span className="flex items-center gap-1">
-              <Spinner size={12} />
-              {localize('com_ui_saving')}
-            </span>
-          )}
-          {saveStatus === 'saved' && localize('com_ui_saved')}
-        </span>
-        {!isEditing && (
+      <div className="flex shrink-0 items-center">
+        {saveStatus === 'saving' && (
+          <Loader2
+            className="size-4 animate-spin text-text-secondary"
+            aria-label={localize('com_ui_saving')}
+          />
+        )}
+        {saveStatus === 'saved' && (
+          <Check
+            className={cn(
+              'size-4 text-green-500 transition-opacity duration-300',
+              saveStatus === 'saved' ? 'opacity-100' : 'opacity-0',
+            )}
+            aria-label={localize('com_ui_saved')}
+          />
+        )}
+        {saveStatus === 'idle' && !isEditing && (
           <TooltipAnchor
             description={localize('com_ui_rename')}
             side="bottom"
