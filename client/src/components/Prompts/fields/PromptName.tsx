@@ -80,7 +80,7 @@ const PromptName: React.FC<Props> = ({ name, isLoading = false, onSave }) => {
   }, []);
 
   return (
-    <div className="group/title flex h-9 min-w-0 flex-1 items-center gap-1.5">
+    <div className="group/title relative flex h-9 min-w-0 flex-1 items-center">
       {isEditing ? (
         <input
           ref={inputRef}
@@ -97,18 +97,14 @@ const PromptName: React.FC<Props> = ({ name, isLoading = false, onSave }) => {
         <button
           type="button"
           onClick={() => setIsEditing(true)}
-          className="flex h-9 min-w-0 flex-1 cursor-text items-center gap-2 truncate rounded-lg text-left text-lg font-semibold text-text-primary transition-colors hover:text-text-secondary focus:outline-none"
+          className="h-9 min-w-0 flex-1 cursor-text truncate text-left text-lg font-semibold text-text-primary transition-colors hover:text-text-secondary focus:outline-none"
           title={newName}
           aria-label={localize('com_ui_edit') + ': ' + (newName ?? '')}
         >
-          <span className="truncate">{newName}</span>
-          <Pencil
-            className="size-3.5 shrink-0 text-text-tertiary opacity-0 transition-opacity group-hover/title:opacity-100"
-            aria-hidden="true"
-          />
+          {newName}
         </button>
       )}
-      <div className="flex size-5 shrink-0 items-center justify-center">
+      <div className="ml-1.5 flex shrink-0 items-center justify-center">
         {saveStatus === 'saving' && (
           <Loader2
             className="size-4 animate-spin text-text-secondary"
@@ -122,6 +118,12 @@ const PromptName: React.FC<Props> = ({ name, isLoading = false, onSave }) => {
               saveStatus === 'saved' ? 'opacity-100' : 'opacity-0',
             )}
             aria-label={localize('com_ui_saved')}
+          />
+        )}
+        {saveStatus === 'idle' && !isEditing && (
+          <Pencil
+            className="size-3.5 text-text-tertiary opacity-0 transition-opacity group-hover/title:opacity-100"
+            aria-hidden="true"
           />
         )}
       </div>
