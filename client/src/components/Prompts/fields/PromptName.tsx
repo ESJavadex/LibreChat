@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { Pencil, Check, Loader2 } from 'lucide-react';
-import { Button, TooltipAnchor } from '@librechat/client';
+import { Check, Loader2 } from 'lucide-react';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
 
@@ -95,14 +94,17 @@ const PromptName: React.FC<Props> = ({ name, isLoading = false, onSave }) => {
           aria-label={localize('com_ui_name')}
         />
       ) : (
-        <span
-          className="block min-w-0 flex-1 truncate border-b border-transparent text-lg font-semibold text-text-primary"
+        <button
+          type="button"
+          onClick={() => setIsEditing(true)}
+          className="block h-9 min-w-0 flex-1 cursor-text truncate border-b border-transparent text-left text-lg font-semibold text-text-primary focus:outline-none"
           title={newName}
+          aria-label={localize('com_ui_edit') + ': ' + (newName ?? '')}
         >
           {newName}
-        </span>
+        </button>
       )}
-      <div className="flex shrink-0 items-center">
+      <div className="flex size-5 shrink-0 items-center justify-center">
         {saveStatus === 'saving' && (
           <Loader2
             className="size-4 animate-spin text-text-secondary"
@@ -116,24 +118,6 @@ const PromptName: React.FC<Props> = ({ name, isLoading = false, onSave }) => {
               saveStatus === 'saved' ? 'opacity-100' : 'opacity-0',
             )}
             aria-label={localize('com_ui_saved')}
-          />
-        )}
-        {saveStatus === 'idle' && !isEditing && (
-          <TooltipAnchor
-            description={localize('com_ui_rename')}
-            side="bottom"
-            render={
-              <Button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                variant="ghost"
-                size="icon"
-                className="size-7 shrink-0"
-                aria-label={localize('com_ui_rename')}
-              >
-                <Pencil className="size-3.5 text-text-primary" aria-hidden="true" />
-              </Button>
-            }
           />
         )}
       </div>
